@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Controle MQTT</title>
+</head>
+<body>
+
+  <h1>Controle do Relé</h1>
+
+  <button onclick="ligar()">Ligar</button>
+  <button onclick="desligar()">Desligar</button>
+
+  <p id="status">Desconectado</p>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <script>
+    const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+
+    client.on("connect", function () {
+      document.getElementById("status").innerText = "Conectado!";
+      console.log("Conectado ao MQTT");
+    });
+
+    function ligar() {
+      client.publish("casa/rele", "ON");
+      console.log("Enviado: ON");
+    }
+
+    function desligar() {
+      client.publish("casa/rele", "OFF");
+      console.log("Enviado: OFF");
+    }
+  </script>
+
+</body>
+</html>

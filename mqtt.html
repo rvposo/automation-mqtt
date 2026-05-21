@@ -1,26 +1,178 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Controle MQTT</title>
-</head>
-<body>
-
-  <h1>Controle do Relé</h1>
-
-  <button onclick="ligar()">Ligar</button>
-  <button onclick="desligar()">Desligar</button>
-
-  <p id="status">Desconectado</p>
 
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top, #243b55 0%, transparent 35%),
+        linear-gradient(135deg, #090b10, #111827);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(23, 26, 33, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 32px;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      text-align: center;
+    }
+
+    .icon {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #facc15, #f97316);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      box-shadow: 0 0 35px rgba(250, 204, 21, 0.35);
+    }
+
+    h1 {
+      font-size: 26px;
+      margin: 0 0 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #9ca3af;
+      margin-bottom: 24px;
+    }
+
+    .status {
+      margin-bottom: 26px;
+      font-size: 14px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 12px #ef4444;
+    }
+
+    .connected .dot {
+      background: #22c55e;
+      box-shadow: 0 0 12px #22c55e;
+    }
+
+    .buttons {
+      display: grid;
+      gap: 14px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .on {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      box-shadow: 0 10px 25px rgba(34, 197, 94, 0.25);
+    }
+
+    .off {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.25);
+    }
+
+    .footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="icon">💡</div>
+
+    <h1>Controle da Lâmpada</h1>
+    <p class="subtitle">Controle remoto via MQTT</p>
+
+    <div id="status" class="status disconnected">
+      <span class="dot"></span>
+      <span id="statusText">Desconectado</span>
+    </div>
+
+    <div class="buttons">
+      <button class="btn on" onclick="ligar()">Ligar lâmpada</button>
+      <button class="btn off" onclick="desligar()">Desligar lâmpada</button>
+    </div>
+
+    <div class="footer">MQTT via HiveMQ WebSocket</div>
+  </div>
 
   <script>
     const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
 
+    const statusEl = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+
     client.on("connect", function () {
-      document.getElementById("status").innerText = "Conectado!";
+      statusText.innerText = "Conectado";
+      statusEl.classList.remove("disconnected");
+      statusEl.classList.add("connected");
       console.log("Conectado ao MQTT");
+    });
+
+    client.on("error", function () {
+      statusText.innerText = "Erro de conexão";
+      statusEl.classList.remove("connected");
+      statusEl.classList.add("disconnected");
+    });
+
+    client.on("close", function () {
+      statusText.innerText = "Desconectado";
+      statusEl.classList.remove("connected");
+      statusEl.classList.add("disconnected");
     });
 
     function ligar() {
@@ -33,6 +185,5 @@
       console.log("Enviado: OFF");
     }
   </script>
-
 </body>
 </html>
